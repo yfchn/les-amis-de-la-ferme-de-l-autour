@@ -4,12 +4,9 @@ import {
   getFirestore,
   collection,
   getDocs,
-  addDoc,
   deleteDoc,
   doc,
-  setDoc,
-  getDoc,
-  updateDoc
+  setDoc
 } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -28,29 +25,59 @@ export const db = getFirestore(app);
 export {
   collection,
   getDocs,
-  addDoc,
   deleteDoc,
   doc,
-  setDoc,
-  getDoc,
-  updateDoc
+  setDoc
 };
-export async function loadAppData() {
-  const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js");
 
-  const ref = doc(db, "settings", "appData");
-  const snap = await getDoc(ref);
+function eventDocRef(eventId) {
+  return doc(db, "events", String(eventId));
+}
 
-  if (snap.exists()) {
-    return snap.data();
+export async function loadEvents() {
+  try {
+    const snap = await getDocs(collection(db, "events"));
+
+    return snap.docs
+      .map(function(documentSnapshot) {
+        return documentSnapshot.data();
+      })
+      .sort(function(a, b) {
+        return Number(a.id || 0) - Number(b.id || 0);
+      });
+  } catch (error) {
+    console.error("Impossible de charger les evenements Firestore.", error);
+    return [];
   }
-
-  return null;
 }
 
-export async function saveAppData(data) {
-  const { setDoc, doc } = await import("https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js");
-
-  const ref = doc(db, "settings", "appData");
-  await setDoc(ref, data);
+export async function saveEvent(event) {
+  try {
+    await setDoc(eventDocRef(event.id), event);
+  } catch (error) {
+    console.error("Impossible d'enregistrer l'evenement Firestore.", error);
+  }
 }
+
+export async function updateEvent(event) {
+  try {
+    await setDoc(eventDocRef(event.id), event, { merge: true });
+  } catch (error) {
+    console.error("Impossible de mettre a jour l'evenement Firestore.", error);
+  }
+}
+
+export async function deleteEvent(eventId) {
+  try {
+    await deleteDoc(eventDocRef(eventId));
+  } catch (error) {
+    console.error("Impossible de supprimer l'evenement Firestore.", error);
+  }
+}
+
+export const firestore = {
+  loadEvents,
+  saveEvent,
+  updateEvent,
+  deleteEvent
+};

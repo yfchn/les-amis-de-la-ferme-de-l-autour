@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Les Amis de la Ferme de l'Autour</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- MODAL INSCRIPTION -->
+<div class="ov" id="ovInscr">
+  <div class="modal">
+    <div id="mForm">
+      <div class="mtitle">S'inscrire 🐴</div>
+      <div class="msub" id="mEvName"></div>
+      <div class="frow">
+        <div class="fg"><label>Prénom *</label><input id="fPre" placeholder="Marie"></div>
+        <div class="fg"><label>Nom *</label><input id="fNom" placeholder="Dupont"></div>
+      </div>
+      <div class="fg"><label>Nom de votre cheval *</label><input id="fChev" placeholder="Éclair…"></div>
+      <div class="frow">
+        <div class="fg"><label>Email *</label><input type="email" id="fMail" placeholder="marie@exemple.fr"></div>
+        <div class="fg"><label>Téléphone</label><input type="tel" id="fTel" placeholder="06 XX XX XX XX"></div>
+      </div>
+      <div class="fg"><label>Commentaire</label><textarea id="fCom" placeholder="Une info particulière…" style="min-height:60px;resize:vertical;"></textarea></div>
+      <div style="display:flex;gap:10px;margin-top:6px;">
+        <button class="bto" style="flex:1;color:var(--muted);border-color:var(--border);" onclick="closeInscr()">Annuler</button>
+        <button class="btn" style="flex:2;" onclick="submitInscr()">Confirmer ✅</button>
+      </div>
+    </div>
+    <div id="mOk" style="display:none;text-align:center;padding:1rem 0;">
+      <div style="font-size:3rem;margin-bottom:12px;">🎉</div>
+      <h3 style="font-family:'Pacifico',cursive;color:var(--teal);margin-bottom:8px;">Inscription enregistrée !</h3>
+      <p style="font-size:14px;color:var(--muted);font-weight:600;">On a bien reçu ta demande. L'équipe te contactera pour confirmer.</p>
+      <button class="btn" style="margin-top:16px;" onclick="closeInscr()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="aLogin">
+  <div class="modal" style="max-width:340px;text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:8px;">🔐</div>
+    <div class="mtitle">Espace admin</div>
+    <div class="msub">Réservé au bureau de l'association</div>
+    <div class="fg"><input type="password" id="aPwd" placeholder="Mot de passe" style="text-align:center;font-size:16px;" onkeydown="if(event.key==='Enter')checkPwd()"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="bto" style="flex:1;color:var(--muted);border-color:var(--border);" onclick="closeLogin()">Annuler</button>
+      <button class="btn" style="flex:2;" onclick="checkPwd()">Entrer</button>
+    </div>
+    <p id="aPwdErr" style="color:#c0392b;font-size:12px;font-weight:700;margin-top:8px;display:none;">Mot de passe incorrect ❌</p>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="aPanel">
+  <div class="apbar">
+    <div class="apbar-t">⚙️ Admin — Ferme de l'Autour</div>
+    <button onclick="closeAdmin()">✕ Fermer</button>
+  </div>
+  <div class="apwrap">
+    <div class="aptabs">
+      <div class="aptab on" onclick="showTab('inscrits',this)">📋 Inscrits</div>
+      <div class="aptab" onclick="showTab('events',this)">📅 Événements</div>
+      <div class="aptab" onclick="showTab('adhesions',this)">💳 Adhésions</div>
+      <div class="aptab" onclick="showTab('membres',this)">👥 Membres</div>
+      <div class="aptab" onclick="showTab('histo',this)">📖 Historique</div>
+      <div class="aptab" onclick="showTab('contact',this)">📞 Contact & textes</div>
+      <div class="aptab" onclick="showTab('galerie',this)">🖼️ Galerie</div>
+      <div class="aptab" onclick="showTab('params',this)">🔧 Paramètres</div>
+    </div>
+
+    <!-- INSCRITS -->
+    <div class="apc on" id="tab-inscrits">
+      <div class="apcard">
+        <h2>📋 Inscrits aux événements</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:1rem;">
+          <div class="ifilters" id="ifilters"><div class="ifilter on" onclick="filtI('tous',this)">Tous</div></div>
+          <button class="btnG" onclick="exportCSV()">⬇️ Exporter CSV</button>
+        </div>
+        <div class="itw"><div id="itbl"><div class="iempty">📭 Aucune inscription pour l'instant.</div></div></div>
+      </div>
+    </div>
+
+    <!-- ÉVÉNEMENTS -->
+    <div class="apc" id="tab-events">
+      <div class="apcard">
+        <h2>📅 Événements à venir</h2>
+        <div id="ap-ev-list"></div>
+        <button class="btnG" onclick="tog('form-add-ev')">+ Ajouter un événement</button>
+        <div class="addform" id="form-add-ev">
+          <div class="afrow">
+            <div class="af"><label>Titre</label><input id="ae-t" placeholder="Stage CSO"></div>
+            <div class="af"><label>Type</label>
+              <select id="ae-type"><option>CSO</option><option>Dressage</option><option>Balade</option><option>CCE</option><option>Concours</option><option>Entrainement</option><option>Stage</option></select>
+            </div>
+          </div>
+          <div class="afrow3">
+            <div class="af"><label>Jour</label><input id="ae-j" placeholder="21" maxlength="2"></div>
+            <div class="af"><label>Mois</label><input id="ae-m" placeholder="Juin"></div>
+            <div class="af"><label>Places</label><input id="ae-pl" placeholder="8 places"></div>
+          </div>
+          <div class="af"><label>Lieu</label><input id="ae-l" placeholder="Ferme de l'Autour"></div>
+          <div class="af">
+    <label>Lien HelloAsso</label>
+    <input id="ae-ha" placeholder="https://www.helloasso.com/...">
+</div>
+          <div class="af"><label>Description</label><textarea id="ae-d" placeholder="Description…" style="min-height:70px;resize:vertical;"></textarea></div>
+          <div style="display:flex;gap:8px;margin-top:6px;">
+            <button class="savebtn" onclick="addEv()">✅ Ajouter</button>
+            <button class="btnR" onclick="tog('form-add-ev')">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <!-- ADHÉSIONS -->
+
+<div class="apc" id="tab-adhesions">
+
+    <div class="apcard">
+
+        <h2>💳 Adhésions</h2>
+
+        <div id="packsList"></div>
+
+        <button class="btnG" onclick="tog('form-add-pack')">
+            ➕ Ajouter un pack
+        </button>
+
+        <div class="addform" id="form-add-pack">
+
+            <div class="af">
+                <label>Nom du pack</label>
+                <input id="ad-nom" placeholder="Adhésion adulte">
+            </div>
+
+            <div class="afrow3">
+
+                <div class="af">
+                    <label>Prix</label>
+                    <input id="ad-prix" placeholder="30">
+                </div>
+
+                <div class="af">
+                    <label>Ordre</label>
+                    <input id="ad-ordre" placeholder="1">
+                </div>
+
+            </div>
+
+            <div class="af">
+                <label>Lien HelloAsso</label>
+                <input id="ad-lien" placeholder="https://www.helloasso.com/...">
+            </div>
+
+            <div class="af">
+                <label>Description</label>
+                <textarea id="ad-desc" placeholder="Description du pack..." style="min-height:80px;"></textarea>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:10px;">
+
+                <button class="savebtn" onclick="addPack()">
+                    ✔ Ajouter
+                </button>
+
+                <button class="btnR" onclick="tog('form-add-pack')">
+                    Annuler
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+    <!-- MEMBRES -->
+    <div class="apc" id="tab-membres">
+      <div class="apcard">
+        <h2>👥 Membres du bureau</h2>
+        <div id="ap-mb-list"></div>
+        <button class="btnG" onclick="tog('form-add-mb')">+ Ajouter un membre</button>
+        <div class="addform" id="form-add-mb">
+          <div class="afrow">
+            <div class="af"><label>Prénom</label><input id="am-p" placeholder="Marie"></div>
+            <div class="af"><label>Nom</label><input id="am-n" placeholder="Dupont"></div>
+          </div>
+          <div class="afrow">
+            <div class="af"><label>Rôle</label><input id="am-r" placeholder="Présidente"></div>
+            <div class="af"><label>Discipline</label><input id="am-d" placeholder="CSO, Dressage…"></div>
+          </div>
+          <div class="af"><label>Président(e) du bureau ?</label>
+            <select id="am-pr"><option value="non">Non</option><option value="oui">Oui</option></select>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:6px;">
+            <button class="savebtn" onclick="addMb()">✅ Ajouter</button>
+            <button class="btnR" onclick="tog('form-add-mb')">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div class="apc" id="tab-histo">
+      <div class="apcard">
+        <h2>📖 Historique</h2>
+        <div id="ap-h-list"></div>
+        <button class="btnG" onclick="tog('form-add-h')">+ Ajouter un événement passé</button>
+        <div class="addform" id="form-add-h">
+          <div class="afrow">
+            <div class="af"><label>Date affichée</label><input id="ah-d" placeholder="🌲 Été 2024"></div>
+            <div class="af"><label>Type</label>
+              <select id="ah-t"><option>CSO</option><option>Dressage</option><option>Balade</option><option>CCE</option><option>Concours</option><option>Création</option><option>Stage</option></select>
+            </div>
+          </div>
+          <div class="af"><label>Titre</label><input id="ah-ti" placeholder="Grande balade en forêt"></div>
+          <div class="af"><label>Description</label><textarea id="ah-de" placeholder="Ce qui s'est passé…" style="min-height:70px;resize:vertical;"></textarea></div>
+          <div class="af"><label>Moment clé (point doré) ?</label>
+            <select id="ah-g"><option value="non">Non</option><option value="oui">Oui</option></select>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:6px;">
+            <button class="savebtn" onclick="addH()">✅ Ajouter</button>
+            <button class="btnR" onclick="tog('form-add-h')">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT & TEXTES -->
+    <div class="apc" id="tab-contact">
+      <div class="apcard">
+        <h2>📞 Informations de contact</h2>
+        <div class="sbar" id="sb-ct">✅ Enregistré !</div>
+        <div class="afrow">
+          <div class="af"><label>Adresse</label><input id="ct-a" placeholder="123 chemin de la Ferme…"></div>
+          <div class="af"><label>Téléphone</label><input id="ct-t" placeholder="06 XX XX XX XX"></div>
+        </div>
+        <div class="afrow">
+          <div class="af"><label>Email</label><input id="ct-e" placeholder="contact@ferme-autour.fr"></div>
+          <div class="af"><label>Facebook / Instagram</label><input id="ct-s" placeholder="@FermeAutour"></div>
+        </div>
+        <button class="savebtn" onclick="saveCt()">💾 Enregistrer</button>
+      </div>
+      <div class="apcard">
+        <h2>✏️ Textes du site</h2>
+        <div class="sbar" id="sb-tx">✅ Enregistré !</div>
+        <div class="af"><label>Titre hero</label><input id="tx-ti" placeholder="L'équitation, c'est mieux ensemble !"></div>
+        <div class="af"><label>Texte d'accroche</label><textarea id="tx-ac" style="min-height:80px;resize:vertical;"></textarea></div>
+        <div class="asep">Chiffres de la barre stats</div>
+        <div class="afrow">
+          <div class="af"><label>Chiffre 1</label><input id="s1n" placeholder="4"></div>
+          <div class="af"><label>Label 1</label><input id="s1l" placeholder="disciplines pratiquées"></div>
+        </div>
+        <div class="afrow">
+          <div class="af"><label>Chiffre 2</label><input id="s2n" placeholder="12+"></div>
+          <div class="af"><label>Label 2</label><input id="s2l" placeholder="événements par an"></div>
+        </div>
+        <div class="afrow">
+          <div class="af"><label>Chiffre 3</label><input id="s3n" placeholder="30+"></div>
+          <div class="af"><label>Label 3</label><input id="s3l" placeholder="propriétaires passionnés"></div>
+        </div>
+        <button class="savebtn" onclick="saveTx()">💾 Enregistrer</button>
+      </div>
+    </div>
+
+   <!-- GALERIE -->
+<div class="apc" id="tab-galerie">
+  <div class="apcard">
+
+    <h2>🖼️ Galerie photos</h2>
+
+    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:1.2rem;">
+      Ajoute tes photos en collant leur URL (Google Photos, GitHub…) ou en uploadant directement depuis ton appareil.
+    </p>
+
+    <div class="sbar" id="sb-gal">✅ Photo ajoutée !</div>
+
+    <div id="ap-gal-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:1.2rem;"></div>
+
+    <button class="btnG" onclick="tog('form-add-gal')">
+      + Ajouter une photo
+    </button>
+
+    <div class="addform" id="form-add-gal">
+
+      <div class="af">
+        <label>Upload depuis ton appareil</label>
+        <input
+          type="file"
+          id="gal-file"
+          accept="image/*"
+          multiple
+          onchange="prevGal(this)"
+          style="font-family:'Nunito',sans-serif;font-size:13px;padding:6px;">
+      </div>
+
+      <div id="gal-prev" style="display:none;margin-bottom:10px;">
+        <img id="gal-prev-img" style="max-width:180px;border-radius:8px;border:2px solid var(--border);">
+      </div>
+
+      <div class="af">
+        <label>Ou coller une URL (Google Photos / GitHub)</label>
+        <input id="gal-url" placeholder="https://…">
+      </div>
+
+      <div class="af">
+        <label>Légende</label>
+        <input id="gal-leg" placeholder="Stage CSO — Juin 2024">
+      </div>
+
+      <p style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px;">
+        💡 Les photos uploadées sont sauvegardées dans le navigateur. Pour les partager sur le site en ligne, uploade-les sur GitHub et colle l'URL.
+      </p>
+
+      <div style="display:flex;gap:8px;">
+        <button class="savebtn" onclick="addGal()">✅ Ajouter</button>
+        <button class="btnR" onclick="tog('form-add-gal')">Annuler</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="apcard">
+
+    <h2>📖 Photos dans l'historique</h2>
+
+    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:1.2rem;">
+      Ajoute une photo à chaque événement passé.
+    </p>
+
+    <div id="ap-histo-photos"></div>
+
+  </div>
+</div>
+    <!-- PARAMÈTRES -->
+    <div class="apc" id="tab-params">
+      <div class="apcard">
+        <h2>🔧 Paramètres</h2>
+        <div class="sbar" id="sb-pwd">✅ Mot de passe modifié !</div>
+        <div class="asep">Changer le mot de passe admin</div>
+        <div class="afrow">
+          <div class="af"><label>Nouveau mot de passe</label><input type="password" id="np1" placeholder="••••••••"></div>
+          <div class="af"><label>Confirmer</label><input type="password" id="np2" placeholder="••••••••"></div>
+        </div>
+        <p id="pErr" style="color:#c0392b;font-size:13px;font-weight:700;display:none;margin-bottom:8px;">Les mots de passe ne correspondent pas.</p>
+        <button class="savebtn" onclick="chgPwd()">💾 Changer</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== SITE PUBLIC ===== -->
+<nav>
+  <div class="nlogo">
+    <img src="assets/images/logo.png.PNG" alt="Logo">
+    <div><strong>Les Amis de la Ferme de l'Autour</strong><span>Écurie de propriétaires</span></div>
+  </div>
+  <ul class="nlinks">
+    <li><a href="#disciplines">Disciplines</a></li>
+    <li><a href="#evenements">Événements</a></li>
+    <li><a href="#historique">Historique</a></li>
+    <li><a href="#galerie">Galerie</a></li>
+    <li><a href="#membres">Membres</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#adhesion" class="ncta">Adhérer 🐴</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-l">
+    <div class="htag">🌿 Écurie de propriétaires</div>
+    <h1 id="pub-titre">L'équitation,<br>c'est mieux <span>ensemble !</span></h1>
+    <p id="pub-accroche">Stages, concours, entraînements, balades en forêt… Une bande de passionnés réunis à la Ferme de l'Autour pour vivre des moments inoubliables avec leurs chevaux.</p>
+    <div class="hbtns">
+      <a href="#evenements" class="btn">🗓️ Voir les événements</a>
+      <a href="#adhesion" class="bto">Nous rejoindre</a>
+    </div>
+  </div>
+  <div class="hero-r"><img src="assets/images/logo.png.PNG"></div>
+</section>
+
+<div class="stats">
+  <div class="stat"><div class="sn" id="ps1n">4</div><div class="sl" id="ps1l">disciplines<br>pratiquées</div></div>
+  <div class="ssep"></div>
+  <div class="stat"><div class="sn" id="ps2n">12+</div><div class="sl" id="ps2l">événements<br>par an</div></div>
+  <div class="ssep"></div>
+  <div class="stat"><div class="sn" id="ps3n">30+</div><div class="sl" id="ps3l">propriétaires<br>passionnés</div></div>
+  <div class="ssep"></div>
+  <div class="stat"><div class="sn">2023</div><div class="sl">année de<br>création</div></div>
+</div>
+
+<section id="disciplines">
+  <div class="wrap">
+    <div class="stitle">Nos disciplines</div>
+    <div class="ssub">Chaque propriétaire pratique à sa façon — ici on aime tout !</div>
+    <div class="dgrid">
+      <div class="dcard"><span style="font-size:2.2rem">🏇</span><div><h3>CSO</h3><p>Stages et entraînements saut d'obstacles avec vos chevaux</p></div></div>
+      <div class="dcard"><span style="font-size:2.2rem">🎯</span><div><h3>Dressage</h3><p>Travail à la reprise, harmonie entre cavalier et cheval</p></div></div>
+      <div class="dcard"><span style="font-size:2.2rem">🌲</span><div><h3>Balade & loisir</h3><p>Sorties tous ensemble, randonnées et moments de détente</p></div></div>
+      <div class="dcard"><span style="font-size:2.2rem">🏅</span><div><h3>CCE</h3><p>Complet — dressage, cross et CSO réunis en une belle journée</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="evenements">
+  <div class="wrap">
+    <div class="stitle">Prochains événements</div>
+    <div class="ssub">Inscris-toi vite, les places partent vite !</div>
+    <div class="egrid" id="pub-ev"></div>
+  </div>
+</section>
+
+<section id="historique">
+  <div class="wrap">
+    <div class="stitle">Notre histoire</div>
+    <div class="ssub">Tout ce qu'on a vécu ensemble depuis le début 🐴</div>
+    <div class="tline" id="pub-histo"></div>
+  </div>
+</section>
+
+<section id="galerie">
+  <div class="wrap">
+    <div class="stitle">Galerie photos</div>
+    <div class="ssub">Les beaux moments en images — bientôt remplie !</div>
+    <div class="ggrid" id="pub-gal">
+      <div class="gitem"><span style="font-size:2rem">📷</span><span>Stage CSO</span></div>
+      <div class="gitem"><span style="font-size:2rem">🌲</span><span>Balade forêt</span></div>
+      <div class="gitem"><span style="font-size:2rem">🏅</span><span>Concours</span></div>
+      <div class="gitem"><span style="font-size:2rem">🎯</span><span>Dressage</span></div>
+      <div class="gitem"><span style="font-size:2rem">🐴</span><span>La ferme</span></div>
+      <div class="gitem"><span style="font-size:2rem">✨</span><span>Moments de vie</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="membres">
+  <div class="wrap">
+    <div class="stitle">Notre équipe</div>
+    <div class="ssub">Les visages derrière l'association !</div>
+    <div class="mgrid" id="pub-mb"></div>
+  </div>
+</section>
+
+<section id="adhesion">
+  <div class="wrap">
+    <div class="stitle">Rejoindre l'asso</div>
+    <div class="ssub">Choisissez la formule qui vous convient</div>
+    <div class="agrid" id="pub-adh">
+</div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="stitle">Nous contacter</div>
+    <div class="ssub">Une question ? On vous répond vite !</div>
+    <div class="cgrid">
+      <div class="cinfo">
+        <h3>Où nous trouver</h3>
+        <div class="crow"><div class="cicon">📍</div><div><p id="pub-adr">Ferme de l'Autour</p><small>Adresse à compléter</small></div></div>
+        <div class="crow"><div class="cicon">📧</div><div><p id="pub-mail">contact@ferme-autour.fr</p><small>On répond en 24h</small></div></div>
+        <div class="crow"><div class="cicon">📱</div><div><p id="pub-tel">06 XX XX XX XX</p><small>Lun–Sam, 9h–19h</small></div></div>
+        <div class="crow"><div class="cicon">📘</div><div><p id="pub-soc">@FermeAutour</p><small>Suivez-nous !</small></div></div>
+      </div>
+      <div class="cform">
+        <h3>Envoyer un message</h3>
+        <div class="fg"><label>Prénom et nom</label><input placeholder="Marie Dupont"></div>
+        <div class="fg"><label>Email</label><input type="email" placeholder="marie@exemple.fr"></div>
+        <div class="fg"><label>Sujet</label>
+          <select><option>Renseignement sur l'association</option><option>Inscription à un événement</option><option>Adhésion</option><option>Autre</option></select>
+        </div>
+        <div class="fg"><label>Message</label><textarea placeholder="Dites-nous tout !" style="min-height:100px;resize:vertical;"></textarea></div>
+        <button class="btn" style="width:100%;text-align:center;">Envoyer 🐴</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="flogo">
+    <img src="assets/images/logo.png.PNG">
+    <strong>Les Amis de la Ferme de l'Autour</strong>
+  </div>
+  <div class="flinks">
+    <a href="#disciplines">Disciplines</a><a href="#evenements">Événements</a>
+    <a href="#historique">Notre histoire</a><a href="#galerie">Galerie</a>
+    <a href="#membres">Membres</a><a href="#adhesion">Adhérer</a><a href="#contact">Contact</a>
+  </div>
+  <p>Association loi 1901 — Ferme de l'Autour — Fait avec ❤️ et plein de coups de sabot</p>
+  <div class="fadmin"><a href="#" onclick="showLogin();return false;">⚙️ Admin</a></div>
+</footer>
+<script src="js/galerie.js"></script>
+<script src="js/historique.js"></script>
+<script src="js/events.js"></script>
+<script src="js/adhesions.js"></script>
+<script src="js/members.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

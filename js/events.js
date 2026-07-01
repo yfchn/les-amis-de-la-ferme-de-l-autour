@@ -1,5 +1,23 @@
 var editEventId = null;
 
+function syncSaveEvent(event){
+  if(window.firestore&&typeof window.firestore.saveEvent==='function'){
+    window.firestore.saveEvent(event);
+  }
+}
+
+function syncUpdateEvent(event){
+  if(window.firestore&&typeof window.firestore.updateEvent==='function'){
+    window.firestore.updateEvent(event);
+  }
+}
+
+function syncDeleteEvent(id){
+  if(window.firestore&&typeof window.firestore.deleteEvent==='function'){
+    window.firestore.deleteEvent(id);
+  }
+}
+
 // ÉVÉNEMENTS
 function renderApEv(d){
   document.getElementById('ap-ev-list').innerHTML=d.events.length?d.events.map(function(e){
@@ -10,6 +28,8 @@ function renderApEv(d){
 function addEv(){
 
   var d=gd();
+  var eventToSync=null;
+  var syncMode=null;
 
   if(editEventId!==null){
 
@@ -27,6 +47,8 @@ function addEv(){
       e.places=document.getElementById('ae-pl').value.trim();
       e.desc=document.getElementById('ae-d').value.trim();
       e.helloasso=document.getElementById('ae-ha').value.trim();
+      eventToSync=e;
+      syncMode='update';
 
     }
 
@@ -36,7 +58,7 @@ function addEv(){
 
   }else{
 
-    d.events.push({
+    eventToSync={
       id:nid(),
       titre:document.getElementById('ae-t').value.trim(),
       type:document.getElementById('ae-type').value,
@@ -46,13 +68,24 @@ function addEv(){
       places:document.getElementById('ae-pl').value.trim(),
       desc:document.getElementById('ae-d').value.trim(),
       helloasso:document.getElementById('ae-ha').value.trim()
-    });
+    };
+
+    d.events.push(eventToSync);
+    syncMode='save';
 
   }
 
   sd(d);
   renderApEv(d);
   renderPub();
+
+  if(eventToSync&&syncMode==='save'){
+    syncSaveEvent(eventToSync);
+  }
+
+  if(eventToSync&&syncMode==='update'){
+    syncUpdateEvent(eventToSync);
+  }
 
   document.getElementById('ae-t').value='';
   document.getElementById('ae-j').value='';
@@ -108,5 +141,7 @@ function delEv(id){
   renderApEv(d);
 
   renderPub();
+
+  syncDeleteEvent(id);
 
 }

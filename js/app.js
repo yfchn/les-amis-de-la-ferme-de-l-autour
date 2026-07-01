@@ -264,6 +264,26 @@ function chgPwd(){
 function tog(id){document.getElementById(id).classList.toggle('on');}
 function flash(id){var b=document.getElementById(id);b.style.display='block';setTimeout(function(){b.style.display='none';},2500);}
 
+// FIRESTORE — lecture des événements uniquement
+async function syncEventsFromFirestore(){
+  try{
+    if(!window.firestore||typeof window.firestore.loadEvents!=='function')return;
+    var events=await window.firestore.loadEvents();
+    if(!Array.isArray(events)||!events.length)return;
+    var d=gd();
+    d.events=events;
+    sd(d);
+    renderPub();
+    var panel=document.getElementById('aPanel');
+    if(panel&&panel.style.display==='block'){
+      renderAdmin();
+    }
+  }catch(e){
+    console.error('Impossible de synchroniser les événements Firestore.',e);
+  }
+}
+
 // INIT
 renderPub();
 renderPubGal(gd());
+window.addEventListener('load',syncEventsFromFirestore);

@@ -1,6 +1,6 @@
 const serviceId = 'service_d8mhk0h';
 const templateId = 'template_sy7l7xa';
-const publicKey = 'Llbo9NST_WtROxg5E';
+const publicKey = 'fAsrFchFCylP_KQst';
 
 const isEmailJsAvailable = typeof emailjs !== 'undefined';
 

@@ -283,7 +283,59 @@ async function syncEventsFromFirestore(){
   }
 }
 
+async function syncHistoryFromFirestore(){
+  try{
+    if(!window.firestore||typeof window.firestore.loadHisto!=='function')return;
+    var histo=await window.firestore.loadHisto();
+    if(!Array.isArray(histo))return;
+
+    var d=gd();
+    var localHistory=Array.isArray(d.histo)?d.histo:[];
+
+    if(!histo.length){
+      await Promise.all(localHistory.map(function(item){
+        return window.firestore.saveHistoItem(item);
+      }));
+      return;
+    }
+
+    var localPhotos={};
+    localHistory.forEach(function(item){
+      if(Object.prototype.hasOwnProperty.call(item,'photo')){
+        localPhotos[String(item.id)]=item.photo;
+      }
+    });
+
+    d.histo=histo.map(function(item){
+      var localItem={
+        id:item.id,
+        date:item.date,
+        titre:item.titre,
+        desc:item.desc,
+        type:item.type,
+        gold:item.gold
+      };
+
+      if(Object.prototype.hasOwnProperty.call(localPhotos,String(item.id))){
+        localItem.photo=localPhotos[String(item.id)];
+      }
+
+      return localItem;
+    });
+
+    sd(d);
+    renderPub();
+    var panel=document.getElementById('aPanel');
+    if(panel&&panel.style.display==='block'){
+      renderAdmin();
+    }
+  }catch(e){
+    console.error('Impossible de synchroniser l’historique Firestore.',e);
+  }
+}
+
 // INIT
 renderPub();
 renderPubGal(gd());
 window.addEventListener('load',syncEventsFromFirestore);
+window.addEventListener('load',syncHistoryFromFirestore);

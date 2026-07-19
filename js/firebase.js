@@ -34,6 +34,21 @@ function eventDocRef(eventId) {
   return doc(db, "events", String(eventId));
 }
 
+function histoDocRef(histoId) {
+  return doc(db, "histo", String(histoId));
+}
+
+function histoFirestoreData(item) {
+  return {
+    id: item.id,
+    date: item.date,
+    titre: item.titre,
+    desc: item.desc,
+    type: item.type,
+    gold: item.gold
+  };
+}
+
 export async function loadEvents() {
   try {
     const snap = await getDocs(collection(db, "events"));
@@ -75,9 +90,54 @@ export async function deleteEvent(eventId) {
   }
 }
 
+export async function loadHisto() {
+  try {
+    const snap = await getDocs(collection(db, "histo"));
+
+    return snap.docs
+      .map(function(documentSnapshot) {
+        const item = documentSnapshot.data();
+
+        return {
+          id: item.id,
+          date: item.date,
+          titre: item.titre,
+          desc: item.desc,
+          type: item.type,
+          gold: item.gold
+        };
+      })
+      .sort(function(a, b) {
+        return Number(a.id || 0) - Number(b.id || 0);
+      });
+  } catch (error) {
+    console.error("Impossible de charger l'historique Firestore.", error);
+    return null;
+  }
+}
+
+export async function saveHistoItem(item) {
+  try {
+    await setDoc(histoDocRef(item.id), histoFirestoreData(item));
+  } catch (error) {
+    console.error("Impossible d'enregistrer l'historique Firestore.", error);
+  }
+}
+
+export async function deleteHistoItem(histoId) {
+  try {
+    await deleteDoc(histoDocRef(histoId));
+  } catch (error) {
+    console.error("Impossible de supprimer l'historique Firestore.", error);
+  }
+}
+
 export const firestore = {
   loadEvents,
   saveEvent,
   updateEvent,
-  deleteEvent
+  deleteEvent,
+  loadHisto,
+  saveHistoItem,
+  deleteHistoItem
 };

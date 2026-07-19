@@ -28,8 +28,14 @@ function delH(id){
 }
 
 // CONTACT
+function syncSaveContact(contact){
+  if(window.firestore&&typeof window.firestore.saveContact==='function'){
+    void window.firestore.saveContact(contact);
+  }
+}
 function saveCt(){
   var d=gd();
   d.contact={adresse:document.getElementById('ct-a').value.trim(),tel:document.getElementById('ct-t').value.trim(),email:document.getElementById('ct-e').value.trim(),social:document.getElementById('ct-s').value.trim()};
   sd(d);renderPub();flash('sb-ct');
+  syncSaveContact(d.contact);
 }

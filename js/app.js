@@ -242,10 +242,16 @@ function exportCSV(){
 }
 
 // TEXTES
+function syncSaveTextes(textes){
+  if(window.firestore&&typeof window.firestore.saveTextes==='function'){
+    void window.firestore.saveTextes(textes);
+  }
+}
 function saveTx(){
   var d=gd();
   d.textes={titre:document.getElementById('tx-ti').value.trim(),accroche:document.getElementById('tx-ac').value.trim(),s1n:document.getElementById('s1n').value.trim(),s1l:document.getElementById('s1l').value.trim(),s2n:document.getElementById('s2n').value.trim(),s2l:document.getElementById('s2l').value.trim(),s3n:document.getElementById('s3n').value.trim(),s3l:document.getElementById('s3l').value.trim()};
   sd(d);renderPub();flash('sb-tx');
+  syncSaveTextes(d.textes);
 }
 
 // MOT DE PASSE
@@ -390,6 +396,60 @@ async function syncAdhesionsFromFirestore(){
   }
 }
 
+async function syncContactFromFirestore(){
+  try{
+    if(!window.firestore||typeof window.firestore.loadContact!=='function')return;
+    var contact=await window.firestore.loadContact();
+    if(contact===null)return;
+
+    var d=gd();
+
+    if(typeof contact==='undefined'){
+      if(window.firestore&&typeof window.firestore.saveContact==='function'){
+        void window.firestore.saveContact(d.contact||{});
+      }
+      return;
+    }
+
+    d.contact=contact;
+    sd(d);
+    renderPub();
+    var panel=document.getElementById('aPanel');
+    if(panel&&panel.style.display==='block'){
+      renderAdmin();
+    }
+  }catch(e){
+    console.error('Impossible de synchroniser le contact Firestore.',e);
+  }
+}
+
+async function syncTextesFromFirestore(){
+  try{
+    if(!window.firestore||typeof window.firestore.loadTextes!=='function')return;
+    var textes=await window.firestore.loadTextes();
+    if(textes===null)return;
+
+    var d=gd();
+
+    if(typeof textes==='undefined'){
+      if(window.firestore&&typeof window.firestore.saveTextes==='function'){
+        void window.firestore.saveTextes(d.textes||{});
+      }
+      return;
+    }
+
+    d.textes=textes;
+    sd(d);
+    renderPub();
+    var panel=document.getElementById('aPanel');
+    if(panel&&panel.style.display==='block'){
+      renderAdmin();
+    }
+  }catch(e){
+    console.error('Impossible de synchroniser les textes Firestore.',e);
+  }
+}
+
 // INIT
 renderPub();
 renderPubGal(gd());
@@ -397,3 +457,5 @@ window.addEventListener('load',syncEventsFromFirestore);
 window.addEventListener('load',syncHistoryFromFirestore);
 window.addEventListener('load',syncMembresFromFirestore);
 window.addEventListener('load',syncAdhesionsFromFirestore);
+window.addEventListener('load',syncContactFromFirestore);
+window.addEventListener('load',syncTextesFromFirestore);

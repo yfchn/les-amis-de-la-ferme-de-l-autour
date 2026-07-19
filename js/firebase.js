@@ -4,6 +4,7 @@ import {
   getFirestore,
   collection,
   getDocs,
+  getDoc,
   deleteDoc,
   doc,
   setDoc
@@ -44,6 +45,14 @@ function membreDocRef(membreId) {
 
 function adhesionDocRef(adhesionId) {
   return doc(db, "adhesions", String(adhesionId));
+}
+
+function contactDocRef() {
+  return doc(db, "settings", "contact");
+}
+
+function textesDocRef() {
+  return doc(db, "settings", "textes");
 }
 
 function histoFirestoreData(item) {
@@ -244,6 +253,52 @@ export async function deleteAdhesion(adhesionId) {
   }
 }
 
+export async function loadContact() {
+  try {
+    const snap = await getDoc(contactDocRef());
+
+    if (!snap.exists()) {
+      return undefined;
+    }
+
+    return snap.data();
+  } catch (error) {
+    console.error("Impossible de charger le contact Firestore.", error);
+    return null;
+  }
+}
+
+export async function saveContact(contact) {
+  try {
+    await setDoc(contactDocRef(), contact);
+  } catch (error) {
+    console.error("Impossible d'enregistrer le contact Firestore.", error);
+  }
+}
+
+export async function loadTextes() {
+  try {
+    const snap = await getDoc(textesDocRef());
+
+    if (!snap.exists()) {
+      return undefined;
+    }
+
+    return snap.data();
+  } catch (error) {
+    console.error("Impossible de charger les textes Firestore.", error);
+    return null;
+  }
+}
+
+export async function saveTextes(textes) {
+  try {
+    await setDoc(textesDocRef(), textes);
+  } catch (error) {
+    console.error("Impossible d'enregistrer les textes Firestore.", error);
+  }
+}
+
 export const firestore = {
   loadEvents,
   saveEvent,
@@ -257,5 +312,9 @@ export const firestore = {
   deleteMembre,
   loadAdhesions,
   saveAdhesion,
-  deleteAdhesion
+  deleteAdhesion,
+  loadContact,
+  saveContact,
+  loadTextes,
+  saveTextes
 };

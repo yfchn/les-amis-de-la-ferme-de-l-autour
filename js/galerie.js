@@ -8,6 +8,18 @@ function renderApGal(d){
   }).join('');
 }
 
+function syncSaveGalerieEntry(galerie){
+  if(window.firestore&&typeof window.firestore.saveGalerieEntry==='function'){
+    void window.firestore.saveGalerieEntry(galerie);
+  }
+}
+
+function syncDeleteGalerieEntry(id){
+  if(window.firestore&&typeof window.firestore.deleteGalerieEntry==='function'){
+    void window.firestore.deleteGalerieEntry(id);
+  }
+}
+
 function prevGal(inp){
 
   if(!inp.files || !inp.files.length) return;
@@ -45,6 +57,7 @@ function addGal(){
 
     var fichiers=Array.from(fi.files);
     var restants=fichiers.length;
+    var galerieEntries=[];
 
     fichiers.forEach(function(file){
 
@@ -52,11 +65,14 @@ function addGal(){
 
       r.onload=function(e){
 
-        d.galerie.push({
+        var galerie={
           id:nid(),
           url:e.target.result,
           leg:leg||''
-        });
+        };
+
+        d.galerie.push(galerie);
+        galerieEntries.push(galerie);
 
         restants--;
 
@@ -74,6 +90,10 @@ function addGal(){
           tog('form-add-gal');
 
           flash('sb-gal');
+
+          galerieEntries.forEach(function(galerie){
+            syncSaveGalerieEntry(galerie);
+          });
 
         }
 
@@ -93,19 +113,22 @@ function addGal(){
 
 function saveGalEntry(url,leg){
   var d=gd();if(!d.galerie)d.galerie=[];
-  d.galerie.push({id:nid(),url:url,leg:leg||''});
+  var galerie={id:nid(),url:url,leg:leg||''};
+  d.galerie.push(galerie);
   sd(d);renderApGal(d);renderPubGal(d);
   document.getElementById('gal-url').value='';
   document.getElementById('gal-leg').value='';
   document.getElementById('gal-file').value='';
   document.getElementById('gal-prev').style.display='none';
   tog('form-add-gal');flash('sb-gal');
+  syncSaveGalerieEntry(galerie);
 }
 
 function delGal(id){
   if(!confirm('Supprimer cette photo ?'))return;
   var d=gd();d.galerie=d.galerie.filter(function(g){return g.id!==id;});
   sd(d);renderApGal(d);renderPubGal(d);
+  syncDeleteGalerieEntry(id);
 }
 
 function renderApHistoPhotos(d){
@@ -127,8 +150,10 @@ function uploadHistoPhoto(inp,id){
 function saveHistoPhoto(id){
   var url=document.getElementById('hp-'+id).value.trim();
   var d=gd();
-  d.histo=d.histo.map(function(h){if(h.id===id)h.photo=url;return h;});
+  var item=null;
+  d.histo=d.histo.map(function(h){if(h.id===id){h.photo=url;item=h;}return h;});
   sd(d);renderPub();renderApHistoPhotos(d);flash('sb-gal');
+  if(item)syncSaveHistoItem(item);
 }
 
 function renderPubGal(d){

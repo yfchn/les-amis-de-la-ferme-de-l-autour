@@ -6,7 +6,7 @@ function renderApH(d){
 }
 function syncSaveHistoItem(item){
   if(window.firestore&&typeof window.firestore.saveHistoItem==='function'){
-    window.firestore.saveHistoItem(item);
+    void window.firestore.saveHistoItem(item);
   }
 }
 function syncDeleteHistoItem(id){

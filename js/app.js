@@ -396,6 +396,34 @@ async function syncAdhesionsFromFirestore(){
   }
 }
 
+async function syncGalerieFromFirestore(){
+  try{
+    if(!window.firestore||typeof window.firestore.loadGalerie!=='function')return;
+    var galerie=await window.firestore.loadGalerie();
+    if(galerie===null)return;
+
+    var d=gd();
+    var localGalerie=Array.isArray(d.galerie)?d.galerie:[];
+
+    if(!galerie.length){
+      localGalerie.forEach(function(item){
+        void window.firestore.saveGalerieEntry(item);
+      });
+      return;
+    }
+
+    d.galerie=galerie;
+    sd(d);
+    renderPubGal(d);
+    var panel=document.getElementById('aPanel');
+    if(panel&&panel.style.display==='block'){
+      renderAdmin();
+    }
+  }catch(e){
+    console.error('Impossible de synchroniser la galerie Firestore.',e);
+  }
+}
+
 async function syncContactFromFirestore(){
   try{
     if(!window.firestore||typeof window.firestore.loadContact!=='function')return;
@@ -457,5 +485,6 @@ window.addEventListener('load',syncEventsFromFirestore);
 window.addEventListener('load',syncHistoryFromFirestore);
 window.addEventListener('load',syncMembresFromFirestore);
 window.addEventListener('load',syncAdhesionsFromFirestore);
+window.addEventListener('load',syncGalerieFromFirestore);
 window.addEventListener('load',syncContactFromFirestore);
 window.addEventListener('load',syncTextesFromFirestore);

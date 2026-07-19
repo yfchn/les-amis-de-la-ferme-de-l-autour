@@ -47,6 +47,10 @@ function adhesionDocRef(adhesionId) {
   return doc(db, "adhesions", String(adhesionId));
 }
 
+function galerieDocRef(galerieId) {
+  return doc(db, "galerie", String(galerieId));
+}
+
 function contactDocRef() {
   return doc(db, "settings", "contact");
 }
@@ -56,7 +60,7 @@ function textesDocRef() {
 }
 
 function histoFirestoreData(item) {
-  return {
+  const data = {
     id: item.id,
     date: item.date,
     titre: item.titre,
@@ -64,6 +68,12 @@ function histoFirestoreData(item) {
     type: item.type,
     gold: item.gold
   };
+
+  if (Object.prototype.hasOwnProperty.call(item, "photo")) {
+    data.photo = item.photo;
+  }
+
+  return data;
 }
 
 function membreFirestoreData(membre) {
@@ -136,7 +146,7 @@ export async function loadHisto() {
       .map(function(documentSnapshot) {
         const item = documentSnapshot.data();
 
-        return {
+        const histo = {
           id: item.id,
           date: item.date,
           titre: item.titre,
@@ -144,6 +154,12 @@ export async function loadHisto() {
           type: item.type,
           gold: item.gold
         };
+
+        if (Object.prototype.hasOwnProperty.call(item, "photo")) {
+          histo.photo = item.photo;
+        }
+
+        return histo;
       })
       .sort(function(a, b) {
         return Number(a.id || 0) - Number(b.id || 0);
@@ -167,6 +183,45 @@ export async function deleteHistoItem(histoId) {
     await deleteDoc(histoDocRef(histoId));
   } catch (error) {
     console.error("Impossible de supprimer l'historique Firestore.", error);
+  }
+}
+
+export async function loadGalerie() {
+  try {
+    const snap = await getDocs(collection(db, "galerie"));
+
+    return snap.docs
+      .map(function(documentSnapshot) {
+        const galerie = documentSnapshot.data();
+
+        return {
+          id: galerie.id,
+          url: galerie.url,
+          leg: galerie.leg
+        };
+      })
+      .sort(function(a, b) {
+        return Number(a.id || 0) - Number(b.id || 0);
+      });
+  } catch (error) {
+    console.error("Impossible de charger la galerie Firestore.", error);
+    return null;
+  }
+}
+
+export async function saveGalerieEntry(galerie) {
+  try {
+    await setDoc(galerieDocRef(galerie.id), galerie);
+  } catch (error) {
+    console.error("Impossible d'enregistrer la galerie Firestore.", error);
+  }
+}
+
+export async function deleteGalerieEntry(galerieId) {
+  try {
+    await deleteDoc(galerieDocRef(galerieId));
+  } catch (error) {
+    console.error("Impossible de supprimer la galerie Firestore.", error);
   }
 }
 
@@ -307,6 +362,9 @@ export const firestore = {
   loadHisto,
   saveHistoItem,
   deleteHistoItem,
+  loadGalerie,
+  saveGalerieEntry,
+  deleteGalerieEntry,
   loadMembres,
   saveMembre,
   deleteMembre,

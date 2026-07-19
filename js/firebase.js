@@ -38,6 +38,10 @@ function histoDocRef(histoId) {
   return doc(db, "histo", String(histoId));
 }
 
+function membreDocRef(membreId) {
+  return doc(db, "membres", String(membreId));
+}
+
 function histoFirestoreData(item) {
   return {
     id: item.id,
@@ -46,6 +50,17 @@ function histoFirestoreData(item) {
     desc: item.desc,
     type: item.type,
     gold: item.gold
+  };
+}
+
+function membreFirestoreData(membre) {
+  return {
+    id: membre.id,
+    prenom: membre.prenom,
+    nom: membre.nom,
+    role: membre.role,
+    disc: membre.disc,
+    pres: membre.pres
   };
 }
 
@@ -132,6 +147,48 @@ export async function deleteHistoItem(histoId) {
   }
 }
 
+export async function loadMembres() {
+  try {
+    const snap = await getDocs(collection(db, "membres"));
+
+    return snap.docs
+      .map(function(documentSnapshot) {
+        const membre = documentSnapshot.data();
+
+        return {
+          id: membre.id,
+          prenom: membre.prenom,
+          nom: membre.nom,
+          role: membre.role,
+          disc: membre.disc,
+          pres: membre.pres
+        };
+      })
+      .sort(function(a, b) {
+        return Number(a.id || 0) - Number(b.id || 0);
+      });
+  } catch (error) {
+    console.error("Impossible de charger les membres Firestore.", error);
+    return null;
+  }
+}
+
+export async function saveMembre(membre) {
+  try {
+    await setDoc(membreDocRef(membre.id), membreFirestoreData(membre));
+  } catch (error) {
+    console.error("Impossible d'enregistrer le membre Firestore.", error);
+  }
+}
+
+export async function deleteMembre(membreId) {
+  try {
+    await deleteDoc(membreDocRef(membreId));
+  } catch (error) {
+    console.error("Impossible de supprimer le membre Firestore.", error);
+  }
+}
+
 export const firestore = {
   loadEvents,
   saveEvent,
@@ -139,5 +196,8 @@ export const firestore = {
   deleteEvent,
   loadHisto,
   saveHistoItem,
-  deleteHistoItem
+  deleteHistoItem,
+  loadMembres,
+  saveMembre,
+  deleteMembre
 };

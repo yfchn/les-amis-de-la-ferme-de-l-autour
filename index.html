@@ -467,16 +467,23 @@
         <div class="crow"><div class="cicon">📱</div><div><p id="pub-tel">06 XX XX XX XX</p><small>Lun–Sam, 9h–19h</small></div></div>
         <div class="crow"><div class="cicon">📘</div><div><p id="pub-soc">@FermeAutour</p><small>Suivez-nous !</small></div></div>
       </div>
-      <div class="cform">
+      <form class="cform" id="contactForm">
         <h3>Envoyer un message</h3>
-        <div class="fg"><label>Prénom et nom</label><input placeholder="Marie Dupont"></div>
-        <div class="fg"><label>Email</label><input type="email" placeholder="marie@exemple.fr"></div>
+        <div class="fg"><label for="contactName">Prénom et nom</label><input id="contactName" name="name" placeholder="Marie Dupont" required></div>
+        <div class="fg"><label for="contactEmail">Email</label><input id="contactEmail" name="email" type="email" placeholder="marie@exemple.fr" required></div>
         <div class="fg"><label>Sujet</label>
-          <select><option>Renseignement sur l'association</option><option>Inscription à un événement</option><option>Adhésion</option><option>Autre</option></select>
+          <select id="contactSubject" name="subject" required>
+            <option value="" selected disabled>Choisissez un sujet</option>
+            <option>Renseignement sur l'association</option>
+            <option>Inscription à un événement</option>
+            <option>Adhésion</option>
+            <option>Autre</option>
+          </select>
         </div>
-        <div class="fg"><label>Message</label><textarea placeholder="Dites-nous tout !" style="min-height:100px;resize:vertical;"></textarea></div>
-        <button class="btn" style="width:100%;text-align:center;">Envoyer 🐴</button>
-      </div>
+        <div class="fg"><label for="contactMessage">Message</label><textarea id="contactMessage" name="message" placeholder="Dites-nous tout !" style="min-height:100px;resize:vertical;" required></textarea></div>
+        <button class="btn" id="contactSubmit" type="submit" style="width:100%;text-align:center;">Envoyer 🐴</button>
+        <p id="contactStatus" role="status" aria-live="polite" style="white-space:pre-line;"></p>
+      </form>
     </div>
   </div>
 </section>
@@ -502,5 +509,7 @@
 <script src="js/members.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="js/contact.js"></script>
 </body>
 </html>

@@ -1,6 +1,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 
 import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  updatePassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+import {
   getFirestore,
   collection,
   getDocs,
@@ -20,6 +28,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
 
 export const db = getFirestore(app);
 
@@ -29,6 +38,13 @@ export {
   deleteDoc,
   doc,
   setDoc
+};
+
+export {
+  signInWithEmailAndPassword,
+  signOut,
+  updatePassword,
+  onAuthStateChanged
 };
 
 function eventDocRef(eventId) {

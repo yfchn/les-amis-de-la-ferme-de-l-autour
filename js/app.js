@@ -2,8 +2,7 @@
 // ============================================================
 // DONNÉES — tout dans localStorage
 // ============================================================
-var PWDK='fa_pwd', DK='fa_data';
-var PWD=localStorage.getItem(PWDK)||'autour2024';
+var DK='fa_data';
 
 var DEF={
   events:[
@@ -255,15 +254,35 @@ function saveTx(){
 }
 
 // MOT DE PASSE
-function chgPwd(){
+async function chgPwd(){
   var p1=document.getElementById('np1').value;
   var p2=document.getElementById('np2').value;
   var err=document.getElementById('pErr');
+  err.textContent='Les mots de passe ne correspondent pas.';
   if(!p1||p1!==p2){err.style.display='block';return;}
-  err.style.display='none';
-  PWD=p1;localStorage.setItem(PWDK,p1);
-  document.getElementById('np1').value='';document.getElementById('np2').value='';
-  flash('sb-pwd');
+
+  if(!window.firebaseAuth.auth.currentUser){
+    err.textContent='Vous devez être connecté.';
+    err.style.display='block';
+    return;
+  }
+
+  try{
+    await window.firebaseAuth.updatePassword(
+      window.firebaseAuth.auth.currentUser,
+      p1
+    );
+    err.style.display='none';
+    document.getElementById('np1').value='';document.getElementById('np2').value='';
+    flash('sb-pwd');
+  }catch(e){
+    if(e.code==='auth/requires-recent-login'){
+      err.textContent='Veuillez vous reconnecter au panneau Admin avant de modifier votre mot de passe.';
+    }else{
+      err.textContent='Une erreur est survenue lors de la modification du mot de passe.';
+    }
+    err.style.display='block';
+  }
 }
 
 // UTILS

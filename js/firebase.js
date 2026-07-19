@@ -42,6 +42,10 @@ function membreDocRef(membreId) {
   return doc(db, "membres", String(membreId));
 }
 
+function adhesionDocRef(adhesionId) {
+  return doc(db, "adhesions", String(adhesionId));
+}
+
 function histoFirestoreData(item) {
   return {
     id: item.id,
@@ -61,6 +65,16 @@ function membreFirestoreData(membre) {
     role: membre.role,
     disc: membre.disc,
     pres: membre.pres
+  };
+}
+
+function adhesionFirestoreData(adhesion) {
+  return {
+    id: adhesion.id,
+    nom: adhesion.nom,
+    prix: adhesion.prix,
+    lien: adhesion.lien,
+    desc: adhesion.desc
   };
 }
 
@@ -189,6 +203,47 @@ export async function deleteMembre(membreId) {
   }
 }
 
+export async function loadAdhesions() {
+  try {
+    const snap = await getDocs(collection(db, "adhesions"));
+
+    return snap.docs
+      .map(function(documentSnapshot) {
+        const adhesion = documentSnapshot.data();
+
+        return {
+          id: adhesion.id,
+          nom: adhesion.nom,
+          prix: adhesion.prix,
+          lien: adhesion.lien,
+          desc: adhesion.desc
+        };
+      })
+      .sort(function(a, b) {
+        return Number(a.id || 0) - Number(b.id || 0);
+      });
+  } catch (error) {
+    console.error("Impossible de charger les adhesions Firestore.", error);
+    return null;
+  }
+}
+
+export async function saveAdhesion(adhesion) {
+  try {
+    await setDoc(adhesionDocRef(adhesion.id), adhesionFirestoreData(adhesion));
+  } catch (error) {
+    console.error("Impossible d'enregistrer l'adhesion Firestore.", error);
+  }
+}
+
+export async function deleteAdhesion(adhesionId) {
+  try {
+    await deleteDoc(adhesionDocRef(adhesionId));
+  } catch (error) {
+    console.error("Impossible de supprimer l'adhesion Firestore.", error);
+  }
+}
+
 export const firestore = {
   loadEvents,
   saveEvent,
@@ -199,5 +254,8 @@ export const firestore = {
   deleteHistoItem,
   loadMembres,
   saveMembre,
-  deleteMembre
+  deleteMembre,
+  loadAdhesions,
+  saveAdhesion,
+  deleteAdhesion
 };

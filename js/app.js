@@ -362,9 +362,38 @@ async function syncMembresFromFirestore(){
   }
 }
 
+async function syncAdhesionsFromFirestore(){
+  try{
+    if(!window.firestore||typeof window.firestore.loadAdhesions!=='function')return;
+    var adhesions=await window.firestore.loadAdhesions();
+    if(!Array.isArray(adhesions))return;
+
+    var d=gd();
+    var localAdhesions=Array.isArray(d.adhesions)?d.adhesions:[];
+
+    if(!adhesions.length){
+      await Promise.all(localAdhesions.map(function(adhesion){
+        return window.firestore.saveAdhesion(adhesion);
+      }));
+      return;
+    }
+
+    d.adhesions=adhesions;
+    sd(d);
+    renderPub();
+    var panel=document.getElementById('aPanel');
+    if(panel&&panel.style.display==='block'){
+      renderAdmin();
+    }
+  }catch(e){
+    console.error('Impossible de synchroniser les adhésions Firestore.',e);
+  }
+}
+
 // INIT
 renderPub();
 renderPubGal(gd());
 window.addEventListener('load',syncEventsFromFirestore);
 window.addEventListener('load',syncHistoryFromFirestore);
 window.addEventListener('load',syncMembresFromFirestore);
+window.addEventListener('load',syncAdhesionsFromFirestore);

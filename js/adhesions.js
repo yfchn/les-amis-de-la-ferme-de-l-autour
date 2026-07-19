@@ -4,6 +4,18 @@
 
 var editPackId = null;
 
+function syncSaveAdhesion(adhesion){
+  if(window.firestore&&typeof window.firestore.saveAdhesion==='function'){
+    window.firestore.saveAdhesion(adhesion);
+  }
+}
+
+function syncDeleteAdhesion(id){
+  if(window.firestore&&typeof window.firestore.deleteAdhesion==='function'){
+    window.firestore.deleteAdhesion(id);
+  }
+}
+
 function renderAdhesions(d){
 
   var c=document.getElementById('packsList');
@@ -38,6 +50,8 @@ function addPack(){
 
   if(!d.adhesions) d.adhesions=[];
 
+  var adhesionToSave=null;
+
   if(editPackId!==null){
 
     var a=d.adhesions.find(function(p){
@@ -51,6 +65,8 @@ function addPack(){
       a.lien=document.getElementById('ad-lien').value.trim();
       a.desc=document.getElementById('ad-desc').value.trim();
 
+      adhesionToSave=a;
+
     }
 
     editPackId=null;
@@ -59,7 +75,7 @@ function addPack(){
 
   }else{
 
-    d.adhesions.push({
+    var adhesion={
 
       id:nid(),
 
@@ -71,7 +87,11 @@ function addPack(){
 
       desc:document.getElementById('ad-desc').value.trim()
 
-    });
+    };
+
+    d.adhesions.push(adhesion);
+
+    adhesionToSave=adhesion;
 
   }
 
@@ -87,6 +107,8 @@ function addPack(){
   document.getElementById('ad-desc').value='';
 
   tog('form-add-pack');
+
+  if(adhesionToSave)syncSaveAdhesion(adhesionToSave);
 
 }
 
@@ -134,5 +156,7 @@ function delPack(id){
   renderAdhesions(d);
 
   renderPub();
+
+  syncDeleteAdhesion(id);
 
 }

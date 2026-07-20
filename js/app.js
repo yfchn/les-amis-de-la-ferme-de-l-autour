@@ -45,7 +45,7 @@ var DEF={
 
 function gd(){try{return JSON.parse(localStorage.getItem(DK))||DEF;}catch(e){return DEF;}}
 function sd(d){localStorage.setItem(DK,JSON.stringify(d));}
-function nid(){var d=gd();d.nid=(d.nid||10)+1;sd(d);return d.nid;}
+function nid(){return Date.now();}
 
 // ============================================================
 // RENDU PUBLIC
